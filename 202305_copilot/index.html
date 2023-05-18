@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>ChatGPT/Copilot体験</title>
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <link rel="stylesheet" href="./dist/reset.css" />
+    <link rel="stylesheet" href="./dist/reveal.css" />
+    <link rel="stylesheet" href="./dist/theme/beige.css" id="theme" />
+    <link rel="stylesheet" href="./css/highlight/base16/zenburn.css" />
+
+    <link rel="stylesheet" href="./_assets/myTheme.css" />
+
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template">
+
+## ChatGPT/Copilotを体験しよう
+</script></section><section  data-markdown><script type="text/template">
+## 自己紹介
+
+![profile](img/profile.jpg)
+
+- 妹尾 一弘
+- サーバーサイドエンジニア
+- Java Do スタッフ
+- 興味分野
+  - AWS/開発環境/Java
+</script></section><section  data-markdown><script type="text/template">
+## お品書き
+
+- GitHub Copilot Chatに触れる
+- ChatGPTプラグインを使ってみる
+- ChatGPTとペアプロでアプリ開発
+- その他のChatGPTの便利な使い方
+</script></section><section  data-markdown><script type="text/template">
+## GitHub Copilot
+
+- OpenAIがコーディングをアシストしてくれる
+- オートコンプリート機能として提供される
+- 個人は月$10から
+</script></section><section  data-markdown><script type="text/template">
+## GitHub Copilot Chat
+
+- Chat形式でOpenAIにアクセスできる
+- 現在private beta
+- Waitlistに登録しておく
+</script></section><section  data-markdown><script type="text/template">
+## 利用開始
+
+- VSCodeのInsiders buildが必要
+- GitHub Copilot Nightly 拡張をインストール
+  - GitHub Copilot拡張と競合するので注意
+</script></section><section  data-markdown><script type="text/template">
+## Chat Window
+
+- エディタタブとして開いてチャット
+- コードを選択してそのコードに対して質問
+- 直接改善もできる
+  - 精度や効率の良い利用は現状難しい
+</script></section><section  data-markdown><script type="text/template">
+例えば
+
+- このコードを保守性の観点から改善したいです
+- このメソッドのテストコードを生成して
+</script></section><section  data-markdown><script type="text/template">
+## ChatGPT プラグイン
+
+- サードパーティプラグイン
+- 現在はベータ版（Plus向け）
+- Storeからインストール
+</script></section><section  data-markdown><script type="text/template">
+## プラグインの利用
+
+- スレッドごとに有効化するプラグインを最初に選ぶ
+  - 有効にできるのは最大3つ
+- チャットにメッセージを投稿すると応答できるプラグインを自動で識別する
+- 応答したプラグインの回答が出力される
+</script></section><section  data-markdown><script type="text/template">
+## 便利なプラグイン
+
+- WebPilot
+  - Webの記事を読んでくれる
+- Show me
+  - 図を書いてくれる</script></section></div>
+    </div>
+
+    <script src="./dist/reveal.js"></script>
+
+    <script src="./plugin/markdown/markdown.js"></script>
+    <script src="./plugin/highlight/highlight.js"></script>
+    <script src="./plugin/zoom/zoom.js"></script>
+    <script src="./plugin/notes/notes.js"></script>
+    <script src="./plugin/math/math.js"></script>
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        slideNumber: true,
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath
+        ]
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"transition":"slide"}, queryOptions);
+    </script>
+
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+</html>
