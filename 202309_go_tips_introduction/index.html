@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>Go言語 100 Tips</title>
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <link rel="stylesheet" href="./dist/reset.css" />
+    <link rel="stylesheet" href="./dist/reveal.css" />
+    <link rel="stylesheet" href="./dist/theme/beige.css" id="theme" />
+    <link rel="stylesheet" href="./css/highlight/base16/zenburn.css" />
+
+    <link rel="stylesheet" href="./_assets/myTheme.css" />
+
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template">
+
+## 書籍紹介: Go言語 100 Tips
+
+</script></section><section  data-markdown><script type="text/template">
+
+## Go言語 100 Tips  
+ありがちなミスを把握し、実装を最適化する
+
+![book](img/go100.jpg)
+
+[インプレスブックス](https://book.impress.co.jp/books/1122101133)
+
+</script></section><section  data-markdown><script type="text/template">
+
+### 原題
+
+## 100 Go Mistakes and How to Avoid Them
+
+</script></section><section  data-markdown><script type="text/template">
+
+### 100個の間違いについて知り  
+### 何がどう良くなかったか  
+### どう書くのが良いかについて学ぶ
+
+</script></section><section  data-markdown><script type="text/template">
+
+### 例えば...
+
+- 標準ライブラリの正しい使い方を知る
+- テストツール・ベンチマークについて知る
+- Go言語の慣習的な設計について知る
+
+</script></section><section  data-markdown><script type="text/template">
+
+### 例えば...
+
+- Go言語の文法や内部構造について理解する
+- 内部構造に基づいた性能特性について理解する
+
+</script></section><section ><section data-markdown><script type="text/template">
+
+### 標準ライブラリについて知る
+
+- time
+- encoding/json
+- database/sql
+- net/http
+
+</script></section><section data-markdown><script type="text/template">
+
+## timeパッケージ
+
+```go
+func foo() {
+  // 何かの処理
+  time.Sleep(5000)
+  // 何かの処理
+}
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+## timeパッケージ
+
+```go
+func foo() {
+  // 何かの処理
+  time.Sleep(5000)
+  // 何かの処理
+}
+```
+
+=> 5 Micro 秒のSleep
+
+</script></section><section data-markdown><script type="text/template">
+
+## time.Duration
+
+```go
+type Duration int64
+
+const (
+	Nanosecond  Duration = 1
+	Microsecond          = 1000 * Nanosecond
+	Millisecond          = 1000 * Microsecond
+	Second               = 1000 * Millisecond
+	Minute               = 60 * Second
+	Hour                 = 60 * Minute
+)
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+## time.Durationを利用する
+
+```go
+func foo() {
+  // 何かの処理
+  time.Sleep(5 * time.Second)
+  // 何かの処理
+}
+```
+
+</script></section></section><section ><section data-markdown><script type="text/template">
+
+### インターフェース設計の
+### ベストプラクティス
+
+#### インターフェースは利用側で定義しよう
+
+</script></section><section data-markdown><script type="text/template">
+
+### Javaなどでよく見る設計
+
+![interface_producer](img/interface_producer.drawio.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+### Goでのインターフェースの
+### ベストプラクティス
+
+![interface_consumer](img/interface_consumer.drawio.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+### Javaなどでよく見る設計
+
+![interface_producer_s](img/interface_producer.drawio.png)
+
+- 公開するインターフェースと実装を分離するため
+- インターフェースの実装が宣言的
+```java
+class FooImpl implements Foo {}
+```
+- 利用者が必要そうなメソッドを予め定義して  
+公開する必要がある
+- 実は必要ないメソッドもあるかもしれない
+
+</script></section><section data-markdown><script type="text/template">
+
+### Goでのインターフェースの
+### ベストプラクティス
+
+![interface_consumer_s](img/interface_consumer.drawio.png)
+
+- Goでは暗黙的にインターフェースが充足される
+- どのレベルまで抽象化して利用するかは  
+利用者側で定義する
+
+</script></section></section><section ><section data-markdown><script type="text/template">
+
+### 他にも...
+
+- 部分文字列とメモリリーク
+- ポインタレシーバをいつ使うべきか
+- ゴルーチンの競合状態の回避
+- CPUキャッシュを意識したコーディング
+- etc...
+
+</script></section><section data-markdown><script type="text/template">
+
+### ゴルーチンとループ変数の関係
+
+</script></section><section data-markdown><script type="text/template">
+
+#### ゴルーチンで非同期に各要素を処理する
+
+```go
+s := []string{"a", "b", "c"}
+
+for _, v := range s { // sの各要素をvに格納してループ
+  go func() {
+    fmt.Print(v)
+  }()
+}
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+#### "a","b","c"が順不同で出力される訳では無い
+
+```
+=> bcc
+=> ccc
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+- 変数 `v` はループ全体で共有される変数
+- 各ゴルーチンが実行されたタイミングの値が  
+表示される
+
+```go
+s := []string{"a", "b", "c"}
+
+for _, v := range s { // sの各要素をvに格納してループ
+  go func() {
+    fmt.Print(v)
+  }()
+}
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+#### 対策1: 各ループ内のローカル変数を定義
+
+```go
+s := []string{"a", "b", "c"}
+
+for _, v := range s {
+  val := v
+  go func() {
+    fmt.Print(val)
+  }()
+}
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+#### 対策2: ループ変数をキャプチャして引数渡し
+
+```go
+s := []string{"a", "b", "c"}
+
+for _, v := range s {
+  go func(val string) {
+    fmt.Print(val)
+  }(v)
+}
+```
+
+</script></section></section><section  data-markdown><script type="text/template">
+
+## まとめ
+
+- 知らないことも多く読み応えがある
+- Go言語の中級者向け
+  - 言語固有の挙動について理解が深まる
+  - Javaはそこそこ分かるけどGoはあまり..  
+  みたいな人にも
+- チームで輪読しても面白そう
+
+</script></section><section  data-markdown><script type="text/template">
+
+### ありがとうございました
+</script></section></div>
+    </div>
+
+    <script src="./dist/reveal.js"></script>
+
+    <script src="./plugin/markdown/markdown.js"></script>
+    <script src="./plugin/highlight/highlight.js"></script>
+    <script src="./plugin/zoom/zoom.js"></script>
+    <script src="./plugin/notes/notes.js"></script>
+    <script src="./plugin/math/math.js"></script>
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        slideNumber: true,
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath
+        ]
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"transition":"slide"}, queryOptions);
+    </script>
+
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+</html>
