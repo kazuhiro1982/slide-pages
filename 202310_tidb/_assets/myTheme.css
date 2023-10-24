@@ -1,0 +1,30 @@
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+    text-transform: none;
+}
+
+img {
+    border: 0px !important;
+}
+
+img[alt=profile] {
+    width: 30%;
+    float: left;
+    border: 0px !important;
+    margin-left: 30px !important;
+    margin-right: 0px !important;
+}
+
+img[alt=ExplainTiKV] {
+    width: 100%;
+    border: 0px !important;
+}
+
+img[alt=ExplainTiFlash] {
+    width: 100%;
+    border: 0px !important;
+}

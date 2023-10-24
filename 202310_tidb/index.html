@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>TiDBに入門してみた</title>
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <link rel="stylesheet" href="./dist/reset.css" />
+    <link rel="stylesheet" href="./dist/reveal.css" />
+    <link rel="stylesheet" href="./dist/theme/beige.css" id="theme" />
+    <link rel="stylesheet" href="./css/highlight/base16/zenburn.css" />
+
+    <link rel="stylesheet" href="./_assets/myTheme.css" />
+
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template">
+
+## TiDBに入門してみた
+
+</script></section><section  data-markdown><script type="text/template">
+
+## 自己紹介
+
+![profile](img/profile.jpg)
+
+- 妹尾 一弘
+- サーバーサイドエンジニア
+- 興味分野
+  - AWS/開発環境/Java
+
+</script></section><section  data-markdown><script type="text/template">
+
+## TiDB
+
+- 分散データベース
+- NewSQLに分類される
+- MySQL互換
+- リアルタイムHTAP
+- ChatGPTによる自然言語からSQLの生成(beta)
+
+</script></section><section  data-markdown><script type="text/template">
+
+## 分散データベース
+
+- 複数のノードでデータを分散して管理する
+- ストレージの水平スケールを可能にした
+- コンピューティングとストレージを分離したことで性能スケールもしやすくなった
+- Cassandra, Amazon Aurora, Google Cloud Spanner
+
+</script></section><section  data-markdown><script type="text/template">
+
+## NewSQL
+
+- NoSQL + RDBMSのいいとこ取り
+- SQL、トランザクションをサポート
+- CockroachDB, TiDB, yugabyteDB
+
+</script></section><section  data-markdown><script type="text/template">
+
+## リアルタイムHTAP
+
+- HTAP: Hybrid Transactional/Analytical Processing
+- トランザクション処理と分析処理を同時に行う
+
+</script></section><section  data-markdown><script type="text/template">
+
+## OLTPとOLAP
+
+- OLTP: Online Transaction Processing
+  - データの登録、更新、削除
+  - RDS
+- OLAP: Online Analytical Processing
+  - データの集計、分析
+  - Redshift, BigQuery, BIツール
+
+</script></section><section  data-markdown><script type="text/template">
+
+## OLAPの課題
+
+- データの更新に時間がかかる
+- 毎時、日次でデータ転記・集計するのが一般的
+- リアルタイムで分析したい
+
+</script></section><section ><section data-markdown><script type="text/template">
+
+## TiFlash
+
+- TiDBの分析用カラムナDB
+- データの更新はTiDBで行い、TiFlashに反映される
+- TiDBのレプリカとして動作する
+- SQL Layerでどちらにクエリを投げるか判断する
+
+</script></section><section data-markdown><script type="text/template">
+
+![Architecture](img/tidb-storage-architecture-1.png)
+
+([公式サイト](https://docs.pingcap.com/ja/tidb/stable/tiflash-overview)より引用)
+
+</script></section></section><section  data-markdown><script type="text/template">
+
+## 触ってみた
+
+- OSSなのでK8s上にデプロイも可能
+- 今回はTiDB Cloudを利用
+
+</script></section><section ><section data-markdown><script type="text/template">
+
+## サインアップ
+
+1. [TiDB Cloud](https://tidbcloud.com/)にアクセス
+2. Googleアカウント等でサインアップ
+    - クレジットカード情報は不要
+3. 無料ですぐに利用開始可能
+
+</script></section><section data-markdown><script type="text/template">
+
+ダッシュボード
+![Dashboard](img/dashboard.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+サンプルデータセットをインポート
+
+![Tutorial](img/Tutorial.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+接続情報の取得
+![Connection](img/connection.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+Client接続
+
+![MySQLWorkbench](img/MySQLWorkbench.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+TiFlashレプリカ作成
+
+```
+USE game;
+ALTER TABLE games SET TIFLASH REPLICA 1;
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+クエリ実行
+
+```sql
+SELECT
+  `name`,
+  SUM(`recommendations`) AS total_recommendations
+FROM `games`
+GROUP BY `name`
+ORDER BY total_recommendations DESC
+LIMIT 100;
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+実行計画分析(TiKV)
+
+```sql
+EXPLAIN ANALYZE SELECT /*+ READ_FROM_STORAGE(TIKV[games]) */ 
+  `name`, SUM(`recommendations`) AS total_recommendations
+FROM `games`
+GROUP BY `name`
+ORDER BY total_recommendations DESC
+LIMIT 100;
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+![ExplainTiKV](img/ExplainTiKV.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+実行計画分析(TiFlash)
+
+```sql
+EXPLAIN ANALYZE SELECT
+  `name`, SUM(`recommendations`) AS total_recommendations
+FROM `games`
+GROUP BY `name`
+ORDER BY total_recommendations DESC
+LIMIT 100;
+```
+
+</script></section><section data-markdown><script type="text/template">
+
+![ExplainTiFlash](img/ExplainTiFlash.png)
+
+</script></section></section><section ><section data-markdown><script type="text/template">
+
+## Chat2Query
+
+- AIによる自然言語からSQLへの変換
+
+</script></section><section data-markdown><script type="text/template">
+
+データ利用に同意
+![Agreements](img/AI-Agreements.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+コメントの自然言語からSQLへ変換
+![Chat2Query](img/Chat2Query.png)
+
+</script></section><section data-markdown><script type="text/template">
+
+日本語もOK
+
+![Chat2Query](img/Chat2QueryJP.png)
+
+</script></section></section><section  data-markdown><script type="text/template">
+
+## 感想
+
+- チュートリアルが充実している
+- HTAPが簡単に始められる
+- Chat2Queryは便利そう
+
+</script></section><section  data-markdown><script type="text/template">
+
+### ありがとうございました</script></section></div>
+    </div>
+
+    <script src="./dist/reveal.js"></script>
+
+    <script src="./plugin/markdown/markdown.js"></script>
+    <script src="./plugin/highlight/highlight.js"></script>
+    <script src="./plugin/zoom/zoom.js"></script>
+    <script src="./plugin/notes/notes.js"></script>
+    <script src="./plugin/math/math.js"></script>
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        slideNumber: true,
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath
+        ]
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"transition":"slide"}, queryOptions);
+    </script>
+
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+</html>
